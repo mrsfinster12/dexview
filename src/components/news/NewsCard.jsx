@@ -8,9 +8,9 @@ const NewsCard = ({ newsItem }) => {
   useEffect(() => {
     const timer = setTimeout(() => {
       setLoading(false);
-    }, 500); // Timeout set to half a second.
+    }, 500);
 
-    return () => clearTimeout(timer); // Clear the timer on component unmount
+    return () => clearTimeout(timer);
   }, []);
 
   const handleImageLoad = () => {
@@ -26,6 +26,11 @@ const NewsCard = ({ newsItem }) => {
       return text.substring(0, maxLength) + "...";
     }
     return text;
+  };
+
+  const formatTimestamp = (timestamp) => {
+    const date = new Date(timestamp * 1000);
+    return date.toLocaleString();
   };
 
   return (
@@ -56,6 +61,9 @@ const NewsCard = ({ newsItem }) => {
             <Skeleton isLoaded={!loading}>
               <Text fontSize="sm" color="gray.500" fontWeight="bold" mb={2}>
                 {newsItem.source_info.name}
+              </Text>
+              <Text fontSize="xs" color="gray.400">
+                {formatTimestamp(newsItem.published_on)}
               </Text>
             </Skeleton>
           </Box>
