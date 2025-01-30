@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { Box } from "@chakra-ui/react";
+import { Box, Container } from "@chakra-ui/react";
 import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import Index from "./pages/Index.jsx";
 import About from "./pages/About.jsx";
@@ -14,18 +14,14 @@ import useHistoricalBTCDataStore from './stores/useHistoricalBTCDataStore';
 function App() {
   const assets = useAssetStore(state => state.assets);
   const fetchAssets = useAssetStore(state => state.fetchAssets);
-  const fetchHistoricalBtcData = useHistoricalBTCDataStore(state => state.fetchHistoricalBtcData); // Access fetchHistoricalBtcData
+  const fetchHistoricalBtcData = useHistoricalBTCDataStore(state => state.fetchHistoricalBtcData);
 
   useEffect(() => {
-    // Fetch assets immediately on component mount
     fetchAssets();
-    // Fetch historical BTC data
     fetchHistoricalBtcData();
-    // Set up the interval to fetch assets every 5 seconds
     const interval = setInterval(() => {
       fetchAssets();
     }, 5000);
-    // Clear the interval when the component unmounts
     return () => clearInterval(interval);
   }, [fetchAssets]);
 
@@ -64,16 +60,18 @@ function App() {
   );
 
   return (
-    <Box display="flex" flexDirection="column" minHeight="100vh">
+    <Box display="flex" flexDirection="column" minHeight="100vh" maxWidth="100vw" overflow="hidden">
       <Router>
         <Header/>
+        <Container maxW="container.xl" px={{ base: 2, md: 4 }} py={4}>
           <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/favorites" element={<Favorites />} />
-              <Route path="/news" element={<NewsPage />} />
-              <Route path="/crypto/:id" element={<CryptoDetails />} />
+            <Route path="/" element={<Index />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/favorites" element={<Favorites />} />
+            <Route path="/news" element={<NewsPage />} />
+            <Route path="/crypto/:id" element={<CryptoDetails />} />
           </Routes>
+        </Container>
         <Footer />
       </Router>
     </Box>
