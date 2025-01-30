@@ -1,35 +1,45 @@
 import { create } from 'zustand';
 
+const CORS_PROXY = "https://api.allorigins.win/raw?url=";
+
 const useNextHalvingInfoStore = create((set) => ({
   daysUntilHalving: null,
   remainingBlocks: null,
   blockTimeInSeconds: null,
   fetchNextHalvingInfo: async () => {
     try {
-      const blockCountResponse = await fetch("https://blockchain.info/q/getblockcount");
+      // Get current block height
+      const blockCountResponse = await fetch(CORS_PROXY + encodeURIComponent("https://blockchain.info/q/getblockcount"));
       if (!blockCountResponse.ok) {
         throw new Error("Failed to fetch block count");
       }
-      const blockCount = await blockCountResponse.json();
-      const blocksUntilHalving = 210000 - (blockCount % 210000);
-      const daysUntilHalving = Math.ceil(blocksUntilHalving / (6 * 24)); // 6 blocks per hour, 24 hours per day
+      const currentBlockHeight = await blockCountResponse.text();
 
-      const blockTimeResponse = await fetch("https://blockchain.info/q/interval");
+      // Calculate remaining blocks until next halving
+      const nextHalvingBlock = Math.ceil(currentBlockHeight / 210000) * 210000;
+      const remainingBlocks = nextHalvingBlock - currentBlockHeight;
+
+      // Get current block time
+      const blockTimeResponse = await fetch(CORS_PROXY + encodeURIComponent("https://blockchain.info/q/interval"));
       if (!blockTimeResponse.ok) {
         throw new Error("Failed to fetch block time");
       }
-      const blockTimeInSeconds = await blockTimeResponse.json();
+      const blockTimeInSeconds = await blockTimeResponse.text();
+
+      // Calculate days until halving
+      const secondsUntilHalving = remainingBlocks * blockTimeInSeconds;
+      const daysUntilHalving = Math.ceil(secondsUntilHalving / (24 * 60 * 60));
 
       set({
-        remainingBlocks: blocksUntilHalving,
-        daysUntilHalving: daysUntilHalving,
-        blockTimeInSeconds: blockTimeInSeconds,
+        daysUntilHalving,
+        remainingBlocks,
+        blockTimeInSeconds,
       });
     } catch (error) {
       console.error("Error fetching next halving info:", error);
       set({
-        remainingBlocks: null,
         daysUntilHalving: null,
+        remainingBlocks: null,
         blockTimeInSeconds: null,
       });
     }

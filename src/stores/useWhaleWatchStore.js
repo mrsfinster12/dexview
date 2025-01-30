@@ -1,5 +1,7 @@
 import { create } from 'zustand';
 
+const CORS_PROXY = "https://api.allorigins.win/raw?url=";
+
 const useWhaleWatchStore = create((set, get) => ({
   highestTransaction: null,
   lastTimestamp: 0,
@@ -7,7 +9,7 @@ const useWhaleWatchStore = create((set, get) => ({
   isLoading: true,
   fetchWhaleActivity: async () => {
     try {
-      const transactionsResponse = await fetch("https://blockchain.info/unconfirmed-transactions?format=json");
+      const transactionsResponse = await fetch(CORS_PROXY + encodeURIComponent("https://blockchain.info/unconfirmed-transactions?format=json"));
       if (!transactionsResponse.ok) {
         throw new Error("Failed to fetch recent transactions");
       }
@@ -38,7 +40,6 @@ const useWhaleWatchStore = create((set, get) => ({
 
       const usdAmount = (highestValue / 100000000) * bitcoinPrice;
 
-      // Update the state only if the transaction is over 10 million for whales, or below 10 million for small fish
       if (usdAmount > 10000000) {
         set({
           highestTransaction: { ...highestTx, usdAmount },
@@ -57,7 +58,7 @@ const useWhaleWatchStore = create((set, get) => ({
         });
       } else {
         set({
-          highestTransaction: null, // No transaction found
+          highestTransaction: null,
           lastTimestamp: highestTx.time,
           error: null,
           isLoading: false,
